@@ -1,0 +1,345 @@
+<html>
+  <head>
+    <title>📹 Camera Dashboard</title>
+
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* GRID LAYOUT - Camera và Map ngang hàng */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        /* VIDEO STREAM */
+        #video-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            border: 3px solid #667eea;
+        }
+
+        /* MAP */
+        #map {
+            height: 480px;
+            width: 100%;
+            border-radius: 10px;
+            border: 3px solid #667eea;
+        }
+
+        /* GPS INFO */
+        #gps {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* STATUS GRID - 2 cột */
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* ALARM STATUS */
+        #alarm {
+            font-size: 1.8em;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        /* WEAPON IMAGE */
+        #weapon_img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            border: 3px solid #f44336;
+            display: block;
+        }
+
+        .archive-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .archive-link:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* CONTROL SECTION */
+        .control-section {
+            text-align: center;
+            padding: 30px;
+        }
+
+        /* ===== SLIDE SWITCH ===== */
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 80px;
+          height: 40px;
+          margin: 0 15px;
+        }
+
+        .switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          inset: 0;
+          background-color: #ccc;
+          transition: 0.4s;
+          border-radius: 40px;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 32px;
+          width: 32px;
+          left: 4px;
+          bottom: 4px;
+          background-color: white;
+          transition: 0.4s;
+          border-radius: 50%;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider {
+          background-color: #f44336;
+        }
+
+        input:checked + .slider:before {
+          transform: translateX(40px);
+        }
+
+        #toggleText {
+            font-size: 1.5em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+      
+    </style>
+
+    <script>
+    async function refreshStatus() {
+        let st = await fetch('/status').then(r=>r.json());
+
+        // TEXT ALARM
+        let alarmDiv = document.getElementById("alarm");
+        let toggle = document.getElementById("alarmToggle");
+        let text = document.getElementById("toggleText");
+
+        if (st.alarm === 1) {
+            alarmDiv.innerText = "🚨 ALARM ĐANG BẬT!";
+            alarmDiv.style.color = "red";
+            alarmDiv.style.fontWeight = "bold";
+
+            toggle.checked = true;
+            text.innerText = "ON";
+            text.style.color = "red";
+
+            document.getElementById("weapon_img").src =
+                "/weapon_image?ts=" + Date.now();
+        } else {
+            alarmDiv.innerText = "Bình thường";
+            alarmDiv.style.color = "green";
+            alarmDiv.style.fontWeight = "normal";
+
+            toggle.checked = false;
+            text.innerText = "OFF";
+            text.style.color = "green";
+        }
+    }
+    setInterval(refreshStatus, 2000);
+
+    // === GPS Map ===
+    let map;
+    let marker;
+
+    async function initMap() {
+        map = L.map('map').setView([10, 106], 19);
+
+        // 🌍 GOOGLE SATELLITE — ẢNH RÕ NHẤT
+        L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 21,
+            attribution: "&copy; Google"
+        }).addTo(map);
+
+        marker = L.marker([10, 106]).addTo(map)
+            .bindPopup("Vị trí hiện tại")
+            .openPopup();
+    }
+
+    async function refreshGPS() {
+        let g = await fetch('/get_gps').then(r => r.json());
+
+        document.getElementById("gps").innerText =
+            "Lat: " + g.lat + " | Lon: " + g.lon;
+
+        if (map && marker) {
+            let lat = g.lat;
+            let lon = g.lon;
+
+            marker.setLatLng([lat, lon]);
+            map.setView([lat, lon], map.getZoom());
+            marker.bindPopup("Vị trí hiện tại").openPopup();
+        }
+    }
+
+// ===== TOGGLE ALARM =====
+    document.addEventListener("DOMContentLoaded", () => {
+        const toggle = document.getElementById("alarmToggle");
+        const text = document.getElementById("toggleText");
+
+        toggle.addEventListener("change", async () => {
+            let state = toggle.checked ? "on" : "off";
+
+            text.innerText = toggle.checked ? "ON" : "OFF";
+            text.style.color = toggle.checked ? "red" : "green";
+
+            await fetch("/alarm", {
+                method: "POST",
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                body: "state=" + state
+            });
+        });
+    }); 
+
+
+    window.onload = () => {
+        initMap();
+        setInterval(refreshGPS, 2000);
+    };
+    </script>
+  </head>
+
+  <body>
+    <div class="container">
+        <h1>🔒 Camera An Ninh - Nhận Diện Vũ Khí</h1>
+
+        <!-- CAMERA VÀ MAP NGANG HÀNG -->
+        <div class="main-grid">
+            <!-- VIDEO STREAM -->
+            <div class="card" id="video-card">
+                <h2>📹 Video Stream (AI nhận diện)</h2>
+                <img src="/video" width="640" height="480">
+            </div>
+
+            <!-- GPS MAP -->
+            <div class="card">
+                <h2>📍 Bản đồ GPS</h2>
+                <div id="map"></div>
+                <div id="gps">Đang tải...</div>
+            </div>
+        </div>
+
+        <!-- TRẠNG THÁI VÀ ẢNH PHÁT HIỆN -->
+        <div class="status-grid">
+            <!-- TRẠNG THÁI -->
+            <div class="card">
+                <h2>⚠️ Trạng thái Báo động</h2>
+                <div id="alarm" style="font-size: 24px;">Đang tải...</div>
+            </div>
+
+            <!-- ẢNH PHÁT HIỆN -->
+            <div class="card">
+                <h2>📸 Ảnh phát hiện vũ khí MỚI NHẤT</h2>
+                <img id="weapon_img" src="/weapon_image?time=0">
+                <a href="/archive_list" class="archive-link">📂 Xem Danh Sách Ảnh Phát Hiện (Archive)</a>
+            </div>
+        </div>
+
+        <!-- ĐIỀU KHIỂN ALARM -->
+        <div class="card">
+            <h2>🔔 Điều khiển Alarm</h2>
+            <div class="control-section">
+                <label class="switch">
+                  <input type="checkbox" id="alarmToggle">
+                  <span class="slider"></span>
+                </label>
+                <span id="toggleText">OFF</span>
+            </div>
+        </div>
+    </div>
+  </body>
+</html>
