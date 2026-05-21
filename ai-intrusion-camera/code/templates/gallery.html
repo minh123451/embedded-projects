@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNAKE EYE | Intrusion History</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="main-header">
+            <h1 class="logo">
+                <span class="eye-icon">👁️</span> SNAKE EYE
+            </h1>
+            <nav class="nav-links">
+                <a href="/" class="nav-item">DASHBOARD</a>
+                <a href="/gallery" class="nav-item active">GALLERY</a>
+                <a href="/logout" class="nav-item" style="color: var(--danger-color); border-color: rgba(255, 77, 77, 0.2);">🚪 LOGOUT</a>
+            </nav>
+        </header>
+
+        <main>
+            <div class="card-title" style="margin-bottom: 2rem;">
+                <span>📅 INTRUSION HISTORY</span>
+                <span id="gallery-count" style="font-size: 0.9rem; color: var(--text-dim);">Total: {{ images|length }} records</span>
+            </div>
+
+            <div class="gallery-grid">
+                {% for img in images %}
+                <div class="glass-card image-card" id="card-{{ loop.index }}">
+                    <img src="/intrusions/{{ img }}" alt="Intrusion" loading="lazy">
+                    <div class="image-info">
+                        <div class="image-time">🕒 {{ img.replace('intrusion_', '').replace('.jpg', '') }}</div>
+                        <div class="card-actions">
+                            <a href="/intrusions/{{ img }}" download="{{ img }}" class="btn-download">📥 DOWNLOAD</a>
+                            <button class="btn-delete" onclick="window.deleteIntrusion('{{ img }}', 'card-{{ loop.index }}')">🗑️ DELETE</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% if not images %}
+                <div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--text-dim);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📁</div>
+                    <p>No records found. The system is scanning for intrusions.</p>
+                </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

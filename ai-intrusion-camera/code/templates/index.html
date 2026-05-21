@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNAKE EYE | AI Monitor Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="main-header">
+            <h1 class="logo">
+                <span class="eye-icon">👁️</span> SNAKE EYE
+            </h1>
+            <nav class="nav-links">
+                <a href="/" class="nav-item active">DASHBOARD</a>
+                <a href="/gallery" class="nav-item">GALLERY</a>
+                <a href="/recordings" class="nav-item">CCTV RECORDINGS</a>
+                <a href="/logout" class="nav-item" style="color: var(--danger-color); border-color: rgba(255, 77, 77, 0.2);">🚪 LOGOUT</a>
+            </nav>
+        </header>
+
+        <main class="dashboard-grid">
+            <!-- Video Section -->
+            <section class="glass-card">
+                <div class="card-title">
+                    <span>🔴 LIVE FEED</span>
+                    <button class="btn-reload" onclick="window.reloadStream()">🔄 REFRESH</button>
+                </div>
+                <div class="video-wrapper">
+                    <iframe id="stream-iframe" src="{{ stream_url }}" allowfullscreen></iframe>
+                </div>
+                <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-dim);">
+                    🌐 <span id="stream-url">{{ stream_url }}</span>
+                </div>
+            </section>
+
+            <!-- Control & Stats Section -->
+            <aside class="stats-container">
+                <!-- Alarm Control -->
+                <div class="glass-card" id="alarm-card">
+                    <div class="card-title">🚨 SYSTEM ALARM</div>
+                    <div class="control-group">
+                        <div class="status-info">
+                            <div class="status-label">Current State</div>
+                            <div id="buzzer-status-text">OFF</div>
+                        </div>
+                        <button id="buzzer-btn" class="alarm-btn-off">
+                            <span class="icon">🔔</span> <span class="btn-text">TOGGLE ALARM</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Light Control (Relay) -->
+                <div class="glass-card" id="relay-card">
+                    <div class="card-title">💡 LIGHT CONTROL</div>
+                    <div class="control-group">
+                        <div class="status-info">
+                            <div class="status-label">Current State</div>
+                            <div id="relay-status-text">OFF</div>
+                        </div>
+                        <button id="relay-btn" class="alarm-btn-off">
+                            <span class="icon">💡</span> <span class="btn-text">TURN ON</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="glass-card">
+                    <div class="card-title">📊 SYSTEM STATS</div>
+                    <div class="stats-list">
+                        <div class="stat-item">
+                            <span class="stat-label">DAILY DETECTIONS</span>
+                            <div class="stat-value" id="stat-total">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">LAST DETECTION</span>
+                            <div class="stat-value" id="stat-last" style="font-size: 1.1rem;">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Info -->
+                <div class="glass-card">
+                    <div class="card-title">⚙️ SYSTEM INFO</div>
+                    <div class="info-list">
+                        <div class="info-item"><b>Status:</b> <span id="sys-status" style="color: var(--success-color);">Operational</span></div>
+                        <div class="info-item"><b>AI Engine:</b> MobileNetV3-GRU</div>
+                        <div class="info-item"><b>Threshold:</b> {{ threshold }} consecutive events</div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

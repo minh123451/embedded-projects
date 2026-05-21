@@ -1,0 +1,20 @@
+{
+  "class_names": [
+    "intrusion",
+    "normal"
+  ],
+  "num_classes": 2,
+  "img_size_train": 320,
+  "img_size_infer": 224,
+  "mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "best_val_acc": 0.9568106312292359
+}
